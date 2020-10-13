@@ -9,9 +9,9 @@ libraryDependencies += "us.oyanglul" %% "dhall-generic" % "0.1.0"
 
 Supposed that you have some Scala case classes
 ```scala
-  sealed trait Shape
-  case class Rectangle(width: Double, height: Double) extends Shape
-  case class Circle(radius: Double) extends Shape
+sealed trait Shape
+case class Rectangle(width: Double, height: Double) extends Shape
+case class Circle(radius: Double) extends Shape
 ```
 
 and a dhall config
@@ -23,6 +23,15 @@ in Shape.Circle {radius = 1.2}
 to load a dhall configuration into Scala case classes, simply just
 
 ```scala
+import org.dhallj.syntax._
+import org.dhallj.codec.syntax._
+import us.oyanglul.dhall.generic._
+
+val expr = """
+let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}>
+in Shape.Circle {radius = 1.2}
+""".parseExpr
+
 expr.normalize.as[Shape]
 // => Right(Circle(1.2)): Either[DecodingFailure, Shape]
 ```
