@@ -11,7 +11,11 @@ import cats.implicits._
 import shapeless.tag.Tagged
 import org.dhallj.syntax._
 
+
 class MySuite extends FunSuite {
+  sealed trait Shape
+  case class Rectangle(width: Double, height: Double) extends Shape
+  case class Circle(radius: Double) extends Shape
 
   implicit val decodeHNil: Decoder[HNil] =  new Decoder[HNil] {
     def decode(expr: Expr): Result[HNil] = HNil.asRight
@@ -126,17 +130,13 @@ class MySuite extends FunSuite {
     }
   }
   test("generic decode product") {
-    case class AProduct(field1: String, field2: Int)
-    val decoder = implicitly[Decoder[AProduct]]
-    val Right(expr) = """{field1 = "Sundae", field2 = 1}""".parseExpr
+    val decoder = implicitly[Decoder[Rectangle]]
+    val Right(expr) = """{width = 1, height = 1.1}""".parseExpr
     val Right(decoded) = decoder.decode(expr)
-    assertEquals(decoded, AProduct("Sundae", 1))
+    assertEquals(decoded, Rectangle(1, 1.1))
   }
 
-  test("generic decode coproduct".only) {
-    sealed trait Shape
-    final case class Rectangle(width: Double, height: Double) extends Shape
-    final case class Circle(radius: Double) extends Shape
+  test("generic decode coproduct") {
     val decoder = implicitly[Decoder[Shape]]
     val Right(expr1) = """let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}> in Shape.Circle {radius = 1.1}""".parseExpr
     val Right(expr2) = """let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}> in Shape.Rectangle {width = 1.1, height = 1.2}""".parseExpr
@@ -144,5 +144,16 @@ class MySuite extends FunSuite {
     val Right(decoded2) = decoder.decode(expr2.normalize())
     assertEquals(decoded1, Circle(1.1))
     assertEquals(decoded2, Rectangle(1.1,1.2))
+  }
+
+  test("nested coproduct and product") {
+    case class OuterClass(name: String, shape: Shape)
+    val Right(expr) = """|
+                         |let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}>
+                         |in {name = "Outer Class", shape = Shape.Circle {radius = 1.2}}
+                         |""".stripMargin.parseExpr
+    val decoder = implicitly[Decoder[OuterClass]]
+    val Right(decoded) = decoder.decode(expr.normalize)
+    assertEquals(decoded, OuterClass("Outer Class", Circle(1.2)))
   }
 }
