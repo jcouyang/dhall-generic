@@ -16,17 +16,19 @@ class MySuite extends FunSuite {
   implicit val decodeHNil: Decoder[HNil] =  new Decoder[HNil] {
     def decode(expr: Expr): Result[HNil] = HNil.asRight
 
-    def isValidType(typeExpr: Expr): Boolean = typeExpr match {
-      // case Application(Expr.Constants.LIST, elementType) => true
-      case _                                             => true
-    }
+    def isValidType(typeExpr: Expr): Boolean = true
 
-    def isExactType(typeExpr: Expr): Boolean = typeExpr match {
-      // case Application(Expr.Constants.LIST, elementType) => true
-      case _                                             => true
-    }
+    def isExactType(typeExpr: Expr): Boolean = true
   }
-  implicit def decodeProductGeneric[A, ARepr](implicit
+
+    implicit val decodeCNil: Decoder[CNil] =  new Decoder[CNil] {
+    def decode(expr: Expr): Result[CNil] = Left(new DecodingFailure("Inconceivable!", expr))
+
+    def isValidType(typeExpr: Expr): Boolean = true
+
+    def isExactType(typeExpr: Expr): Boolean = true
+  }
+  implicit def decodeGeneric[A, ARepr](implicit
     gen: LabelledGeneric.Aux[A, ARepr],
     decoder: Decoder[ARepr]
   ): Decoder[A] =  new Decoder[A] {
@@ -45,6 +47,51 @@ class MySuite extends FunSuite {
     }
   }
 
+  implicit def decodeCoproduct [K <: Symbol, V, T <: Coproduct](implicit
+    vDecoder: Lazy[Decoder[V]],
+    tailDecoder: Decoder[T],
+    kWitness: Witness.Aux[K],
+  ): Decoder[FieldType[K, V] :+: T] = new Decoder[FieldType[K, V] :+: T] {
+    val key = kWitness.value.name
+    def decode(expr: Expr): Result[FieldType[K, V] :+: T] = expr.normalize match {
+      case RecordLiteral(fields) =>
+        println("0---00-")
+        println(s"""---union litral $fields, ${fields.get("Circle")}, ${fields.get("Rectangle")}""")
+        for {
+        valueExpr <- fields.get(key).toRight(new DecodingFailure(s"missing key ${key}", expr))
+        hValue <- vDecoder.value.decode(valueExpr)
+        tail <- tailDecoder.decode(expr)
+        } yield Inl(field[K](hValue))
+      case Application(FieldAccess(UnionType(unionType), typ), arg) =>
+        println(unionType)
+        println(typ)
+        println(arg)
+        if(key == typ) {
+          println("inleft")
+          vDecoder.value.decode(arg).map{hValue => Inl(field[K](hValue))}
+        }else {
+          println("inright")
+          tailDecoder.decode(expr).map{Inr(_)}
+        }
+      case other =>
+        println("------------")
+        println(other)
+        Left(new DecodingFailure("not a union", other))
+    }
+
+    def isValidType(typeExpr: Expr): Boolean = typeExpr match {
+      case a                                             =>
+        println(s"---isValidType $typeExpr, $a")
+        true
+    }
+
+    def isExactType(typeExpr: Expr): Boolean = typeExpr match {
+      // case Application(Expr.Constants.LIST, elementType) => true
+      case a                                             =>
+        println(s"---isExactType $typeExpr, $a")
+        true
+    }
+  }
   implicit def decodeProduct[K <: Symbol, V, T <: HList](implicit
     vDecoder: Lazy[Decoder[V]],
     tailDecoder: Decoder[T],
@@ -62,7 +109,7 @@ class MySuite extends FunSuite {
       case other =>
         println("------------")
         println(other)
-        Left(new DecodingFailure("Record", other))
+        Left(new DecodingFailure("not a record", other))
     }
 
     def isValidType(typeExpr: Expr): Boolean = typeExpr match {
@@ -80,10 +127,22 @@ class MySuite extends FunSuite {
   }
   test("generic decode product") {
     case class AProduct(field1: String, field2: Int)
-    val gen = LabelledGeneric[AProduct].to(AProduct("Sundae", 1))
     val decoder = implicitly[Decoder[AProduct]]
     val Right(expr) = """{field1 = "Sundae", field2 = 1}""".parseExpr
     val Right(decoded) = decoder.decode(expr)
     assertEquals(decoded, AProduct("Sundae", 1))
+  }
+
+  test("generic decode coproduct".only) {
+    sealed trait Shape
+    final case class Rectangle(width: Double, height: Double) extends Shape
+    final case class Circle(radius: Double) extends Shape
+    val decoder = implicitly[Decoder[Shape]]
+    val Right(expr1) = """let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}> in Shape.Circle {radius = 1.1}""".parseExpr
+    val Right(expr2) = """let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}> in Shape.Rectangle {width = 1.1, height = 1.2}""".parseExpr
+    val Right(decoded1) = decoder.decode(expr1.normalize())
+    val Right(decoded2) = decoder.decode(expr2.normalize())
+    assertEquals(decoded1, Circle(1.1))
+    assertEquals(decoded2, Rectangle(1.1,1.2))
   }
 }
