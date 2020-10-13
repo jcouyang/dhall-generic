@@ -7,20 +7,7 @@ import org.dhallj.core.Expr
 import shapeless.labelled.{FieldType, field}
 import shapeless._
 import cats.syntax.either._
-
-object generic {
-  implicit val decodeHNil: Decoder[HNil] = new Decoder[HNil] {
-    def decode(expr: Expr): Result[HNil] = HNil.asRight
-    def isValidType(typeExpr: Expr): Boolean = true
-    def isExactType(typeExpr: Expr): Boolean = true
-  }
-
-  implicit val decodeCNil: Decoder[CNil] = new Decoder[CNil] {
-    def decode(expr: Expr): Result[CNil] =
-      Left(new DecodingFailure("Inconceivable! Coproduct never be CNil", expr))
-    def isValidType(typeExpr: Expr): Boolean = true
-    def isExactType(typeExpr: Expr): Boolean = true
-  }
+trait LowPriorityForScala212Binary {
   implicit def decodeGeneric[A, ARepr](implicit
       gen: LabelledGeneric.Aux[A, ARepr],
       decoder: Decoder[ARepr]
@@ -66,7 +53,9 @@ object generic {
               valueExpr <-
                 fields
                   .get(key)
-                  .toRight(new DecodingFailure(s"missing key ${key} in record", expr))
+                  .toRight(
+                    new DecodingFailure(s"missing key ${key} in record", expr)
+                  )
               hValue <- vDecoder.value.decode(valueExpr)
               tail <- tailDecoder.decode(expr)
             } yield field[K](hValue) :: tail
@@ -76,4 +65,18 @@ object generic {
       def isValidType(typeExpr: Expr): Boolean = true
       def isExactType(typeExpr: Expr): Boolean = true
     }
+}
+object generic extends LowPriorityForScala212Binary {
+  implicit val decodeHNil: Decoder[HNil] = new Decoder[HNil] {
+    def decode(expr: Expr): Result[HNil] = HNil.asRight
+    def isValidType(typeExpr: Expr): Boolean = true
+    def isExactType(typeExpr: Expr): Boolean = true
+  }
+
+  implicit val decodeCNil: Decoder[CNil] = new Decoder[CNil] {
+    def decode(expr: Expr): Result[CNil] =
+      Left(new DecodingFailure("Inconceivable! Coproduct never be CNil", expr))
+    def isValidType(typeExpr: Expr): Boolean = true
+    def isExactType(typeExpr: Expr): Boolean = true
+  }
 }

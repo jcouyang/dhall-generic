@@ -5,10 +5,12 @@ import munit._
 import org.dhallj.syntax._
 import org.dhallj.codec.syntax._
 
+sealed trait Shape
+case class Rectangle(width: Double, height: Double) extends Shape
+case class Circle(radius: Double) extends Shape
+case class OuterClass(name: String, shape: Shape)
+
 class GenericSpec extends FunSuite {
-  sealed trait Shape
-  case class Rectangle(width: Double, height: Double) extends Shape
-  case class Circle(radius: Double) extends Shape
 
   test("generic decode product") {
     val Right(expr) = """{width = 1, height = 1.1}""".parseExpr
@@ -34,12 +36,11 @@ class GenericSpec extends FunSuite {
   }
 
   test("nested coproduct and product") {
-    case class OuterClass(name: String, shape: Shape)
     val Right(expr) =
       """|
-                         |let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}>
-                         |in {name = "Outer Class", shape = Shape.Circle {radius = 1.2}}
-                         |""".stripMargin.parseExpr
+         |let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}>
+         |in {name = "Outer Class", shape = Shape.Circle {radius = 1.2}}
+         |""".stripMargin.parseExpr
     val Right(decoded) = expr.normalize.as[OuterClass]
     assertEquals(decoded, OuterClass("Outer Class", Circle(1.2)))
   }
@@ -47,7 +48,10 @@ class GenericSpec extends FunSuite {
   test("exception") {
     val Right(expr) = "{width = \"asdf\", height = 1.1}".parseExpr
     val Left(error) = expr.normalize.as[Circle]
-    assertEquals(error.getMessage, "Error decoding missing key radius in record")
+    assertEquals(
+      error.getMessage,
+      "Error decoding missing key radius in record"
+    )
 
   }
 }
