@@ -5,7 +5,7 @@ ThisBuild / organizationName := "blog.oyanglul.us"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "Dhall Scala Generic",
+    name := "Dhall Generic",
     libraryDependencies ++= Seq(
       "org.dhallj" %% "dhall-scala" % "0.4.0",
       "org.dhallj" %% "dhall-scala-codec" % "0.4.0",
