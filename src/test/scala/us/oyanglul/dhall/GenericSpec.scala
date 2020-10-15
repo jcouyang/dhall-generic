@@ -4,6 +4,7 @@ import generic._
 import munit._
 import org.dhallj.syntax._
 import org.dhallj.codec.syntax._
+import org.dhallj.codec.Decoder._
 
 sealed trait Shape
 case class Rectangle(width: Double, height: Double) extends Shape
@@ -56,11 +57,10 @@ class GenericSpec extends FunSuite {
 
   test("case object") {
     sealed trait Env
-    case object Local extends Env
+    // case object Local extends Env
     case object Sit extends Env
-    case object Prod extends Env
+    // case object Prod extends Env
     case class Config(env: Env)
-    println(s"$Local, $Sit, $Prod")
     val Right(expr) = """{env = <Local | Sit | Prod>.Sit}""".parseExpr
     val Right(decoded) = expr.normalize().as[Config]
     assertEquals(decoded, Config(Sit))
@@ -72,9 +72,17 @@ class GenericSpec extends FunSuite {
     case class Sit() extends Env
     case class Prod() extends Env
     case class Config(env: Env)
-    println(s"$Local, $Sit, $Prod")
     val Right(expr) = """{env = <Local | Sit | Prod>.Sit}""".parseExpr
     val Right(decoded) = expr.normalize().as[Config]
     assertEquals(decoded, Config(Sit()))
+  }
+
+  test("list of Shape") {
+    val Right(expr) =
+      """let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}> in {shapes = [Shape.Circle {radius = 1.1}]}""".parseExpr
+    case class Shapes(shapes: List[Shape])
+    val Right(decoded) = expr.normalize().as[Shapes]
+
+    assertEquals(decoded, Shapes(List(Circle(1.1))))
   }
 }

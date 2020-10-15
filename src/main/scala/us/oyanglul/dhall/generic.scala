@@ -11,6 +11,7 @@ import cats.syntax.either._
 object generic {
   implicit val decodeHNil: Decoder[HNil] = new Decoder[HNil] {
     def decode(expr: Expr): Result[HNil] = HNil.asRight
+    // visitor pattern is not use in scala
     def isValidType(typeExpr: Expr): Boolean = true
     def isExactType(typeExpr: Expr): Boolean = true
   }
