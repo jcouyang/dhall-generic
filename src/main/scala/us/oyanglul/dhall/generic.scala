@@ -22,16 +22,17 @@ trait LowPriorityForScala212Binary {
   implicit def decodeCoproduct[K <: Symbol, V, T <: Coproduct](implicit
       vDecoder: Lazy[Decoder[V]],
       tailDecoder: Decoder[T],
-    kWitness: Witness.Aux[K]
+      kWitness: Witness.Aux[K]
   ): Decoder[FieldType[K, V] :+: T] =
     new Decoder[FieldType[K, V] :+: T] {
       val key = kWitness.value.name
       def decode(expr: Expr): Result[FieldType[K, V] :+: T] = {
-            val decoderEitherLeftOrRight = (arg: Expr, typ: String) =>  if (key == typ) {
-              vDecoder.value.decode(arg).map { hValue => Inl(field[K](hValue)) }
-            } else {
-              tailDecoder.decode(expr).map { Inr(_) }
-            }
+        val decoderEitherLeftOrRight = (arg: Expr, typ: String) =>
+          if (key == typ) {
+            vDecoder.value.decode(arg).map { hValue => Inl(field[K](hValue)) }
+          } else {
+            tailDecoder.decode(expr).map { Inr(_) }
+          }
         expr.normalize match {
           case Application(FieldAccess(UnionType(_), typ), arg) =>
             decoderEitherLeftOrRight(arg, typ)

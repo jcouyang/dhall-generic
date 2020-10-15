@@ -63,10 +63,10 @@ class GenericSpec extends FunSuite {
     println(s"$Local, $Sit, $Prod")
     val Right(expr) = """{env = <Local | Sit | Prod>.Sit}""".parseExpr
     val Right(decoded) = expr.normalize().as[Config]
-    assertEquals(decoded,  Config(Sit))
+    assertEquals(decoded, Config(Sit))
   }
 
-    test("empty case class") {
+  test("empty case class") {
     sealed trait Env
     case class Local() extends Env
     case class Sit() extends Env
@@ -75,6 +75,6 @@ class GenericSpec extends FunSuite {
     println(s"$Local, $Sit, $Prod")
     val Right(expr) = """{env = <Local | Sit | Prod>.Sit}""".parseExpr
     val Right(decoded) = expr.normalize().as[Config]
-    assertEquals(decoded,  Config(Sit()))
+    assertEquals(decoded, Config(Sit()))
   }
 }
