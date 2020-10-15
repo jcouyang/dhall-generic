@@ -7,6 +7,7 @@ import org.dhallj.core.Expr
 import shapeless.labelled.{FieldType, field}
 import shapeless._
 import cats.syntax.either._
+
 trait LowPriorityForScala212Binary {
   implicit def decodeGeneric[A, ARepr](implicit
       gen: LabelledGeneric.Aux[A, ARepr],
@@ -21,21 +22,26 @@ trait LowPriorityForScala212Binary {
   implicit def decodeCoproduct[K <: Symbol, V, T <: Coproduct](implicit
       vDecoder: Lazy[Decoder[V]],
       tailDecoder: Decoder[T],
-      kWitness: Witness.Aux[K]
+    kWitness: Witness.Aux[K]
   ): Decoder[FieldType[K, V] :+: T] =
     new Decoder[FieldType[K, V] :+: T] {
       val key = kWitness.value.name
-      def decode(expr: Expr): Result[FieldType[K, V] :+: T] =
-        expr.normalize match {
-          case Application(FieldAccess(UnionType(_), typ), arg) =>
-            if (key == typ) {
+      def decode(expr: Expr): Result[FieldType[K, V] :+: T] = {
+            val decoderEitherLeftOrRight = (arg: Expr, typ: String) =>  if (key == typ) {
               vDecoder.value.decode(arg).map { hValue => Inl(field[K](hValue)) }
             } else {
               tailDecoder.decode(expr).map { Inr(_) }
             }
+        expr.normalize match {
+          case Application(FieldAccess(UnionType(_), typ), arg) =>
+            decoderEitherLeftOrRight(arg, typ)
+          case FieldAccess(UnionType(_), typ) =>
+            decoderEitherLeftOrRight(expr, typ)
           case other =>
-            Left(new DecodingFailure("expr is not a union", other))
+            Left(new DecodingFailure(s"expr $other is not a union", other))
         }
+      }
+
       def isValidType(typeExpr: Expr): Boolean = true
       def isExactType(typeExpr: Expr): Boolean = true
     }

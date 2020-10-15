@@ -52,6 +52,29 @@ class GenericSpec extends FunSuite {
       error.getMessage,
       "Error decoding missing key radius in record"
     )
+  }
 
+  test("case object") {
+    sealed trait Env
+    case object Local extends Env
+    case object Sit extends Env
+    case object Prod extends Env
+    case class Config(env: Env)
+    println(s"$Local, $Sit, $Prod")
+    val Right(expr) = """{env = <Local | Sit | Prod>.Sit}""".parseExpr
+    val Right(decoded) = expr.normalize().as[Config]
+    assertEquals(decoded,  Config(Sit))
+  }
+
+    test("empty case class") {
+    sealed trait Env
+    case class Local() extends Env
+    case class Sit() extends Env
+    case class Prod() extends Env
+    case class Config(env: Env)
+    println(s"$Local, $Sit, $Prod")
+    val Right(expr) = """{env = <Local | Sit | Prod>.Sit}""".parseExpr
+    val Right(decoded) = expr.normalize().as[Config]
+    assertEquals(decoded,  Config(Sit()))
   }
 }
