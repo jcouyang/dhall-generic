@@ -2,9 +2,10 @@
 Load Dhall config directly into Scala case class
 
 ![Build and Test](https://github.com/jcouyang/dhall-scala-generic/workflows/Build%20and%20Test/badge.svg)
+[[https://index.scala-lang.org/jcouyang/dhall-generic][https://index.scala-lang.org/jcouyang/dhall-generic/latest.svg?v=1]]
 
 ```
-libraryDependencies += "us.oyanglul" %% "dhall-generic" % "0.1.0"
+libraryDependencies += "us.oyanglul" %% "dhall-generic" % "0.2.0"
 ```
 
 Supposed that you have some Scala case classes
