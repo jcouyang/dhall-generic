@@ -30,12 +30,8 @@ lazy val root = (project in file("."))
   .settings(
     name := "Dhall Generic",
     crossScalaVersions := supportedScalaVersions,
-//    scalacOptions += "-Xlog-implicits",
-    libraryDependencies ++= Seq(
-      "org.dhallj" %% "dhall-scala" % "0.4.0",
-      "org.dhallj" %% "dhall-scala-codec" % "0.4.0",
-      "com.chuusai" %% "shapeless" % "2.4.0-M1"
-    ),
+    //    scalacOptions += "-Xlog-implicits",
+    libraryDependencies ++= dhall.load.modules.map{case Module(o, n, v) => o %% n % v},
     libraryDependencies += "org.scalameta" %% "munit" % "0.7.14" % Test,
     testFrameworks += new TestFramework("munit.Framework")
   )
