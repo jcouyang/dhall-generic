@@ -36,3 +36,39 @@ in Shape.Circle {radius = 1.2}
 expr.normalize.as[Shape]
 // => Right(Circle(1.2)): Either[DecodingFailure, Shape]
 ```
+
+## Use cases
+### Load application config
+It is very simple to replace [HOCON `application.conf`](https://github.com/lightbend/config) with dhall.
+
+To load `src/main/resources/application.dhall` from classpath your will need [dhall-imports](https://github.com/travisbrown/dhallj#dhall-imports)
+
+```scala
+import org.dhallj.syntax._
+import org.dhallj.codec.syntax._
+import us.oyanglul.dhall.generic._
+import org.dhallj.imports.syntax._
+
+  BlazeClientBuilder[IO](ExecutionContext.global).resource.use { implicit c =>
+        IO.fromEither("classpath:/application.dhall".parseExpr)
+          .flatMap(_.resolveImports[IO])
+          .flatMap{expr => IO.fromEither(expr.normalize.as[Config])}
+    }
+```
+
+### Load dhall to sbt libraryDependencies
+This project itself is an example of how to load dhall into build.sbt
+
+It is recursively using [previous version](./project/build.sbt#L4) [to load](./project/loadDhall.scala) [./build.dhall](./build.dhall) to libraryDependencies
+
+```scala
+libraryDependencies ++= dhall.load.modules.map{case Module(o, n, v) => o %% n % v},
+```
+
+## Custom Decoder
+Create new decoder from existing decoder
+
+i.e. UUID
+```scala
+implicit val decodeUUID: Decoder[UUID] = decodeString.map(UUID.from)
+```
