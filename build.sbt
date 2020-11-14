@@ -32,6 +32,6 @@ lazy val root = (project in file("."))
     crossScalaVersions := supportedScalaVersions,
     //    scalacOptions += "-Xlog-implicits",
     libraryDependencies ++= dhall.load.modules.map{case Module(o, n, v) => o %% n % v},
-    libraryDependencies += "org.scalameta" %% "munit" % "0.7.14" % Test,
+    libraryDependencies += "org.scalameta" %% "munit" % "0.7.17" % Test,
     testFrameworks += new TestFramework("munit.Framework")
   )
