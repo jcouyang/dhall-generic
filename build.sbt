@@ -41,6 +41,6 @@ lazy val root = (project in file("."))
     libraryDependencies ++= dhall.load.modules.map { case Module(o, n, v) =>
       o %% n % v
     },
-    libraryDependencies += "org.scalameta" %% "munit" % "0.7.17" % Test,
+    libraryDependencies += "org.scalameta" %% "munit" % "0.7.18" % Test,
     testFrameworks += new TestFramework("munit.Framework")
   )
