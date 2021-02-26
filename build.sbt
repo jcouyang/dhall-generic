@@ -1,5 +1,5 @@
 val scala212 = "2.12.12"
-val scala213 = "2.13.3"
+val scala213 = "2.13.5"
 lazy val supportedScalaVersions = List(scala213, scala212)
 
 inScope(Scope.GlobalScope)(
