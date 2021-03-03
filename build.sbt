@@ -1,6 +1,7 @@
 val scala212 = "2.12.12"
 val scala213 = "2.13.3"
 val scala3 = "3.0.0-RC1"
+
 lazy val supportedScalaVersions = List(scala213, scala212, scala3)
 
 inScope(Scope.GlobalScope)(
@@ -27,7 +28,7 @@ inScope(Scope.GlobalScope)(
     pgpPublicRing := file(".") / ".gnupg" / "pubring.asc",
     pgpSecretRing := file(".") / ".gnupg" / "secring.asc",
     releaseEarlyWith := SonatypePublisher,
-    scalaVersion := scala213,
+    scalaVersion := scala3,
     version := "0.1.0-SNAPSHOT",
     organization := "us.oyanglul",
     organizationName := "blog.oyanglul.us"
