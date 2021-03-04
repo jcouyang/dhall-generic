@@ -8,7 +8,8 @@ let dhallOrg = "org.dhallj"
 
 let dhallVersion = "0.4.0"
 
-in    { modules =
+in    { version = "0.3"
+      , modules =
         [ { org = dhallOrg, name = "dhall-scala", version = dhallVersion }
         , { org = dhallOrg, name = "dhall-scala-codec", version = dhallVersion }
         ]

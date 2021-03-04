@@ -1,8 +1,9 @@
 name: Release
 on:
-  push:
-    tags:
-      - v[0-9]+.*
+  workflow_run:
+    workflows: ["Build and Test"]
+    branches: [ master ]
+    types: [ completed ]
 
 jobs:
   publish:
@@ -23,12 +24,20 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: Setup Dhall
+      uses: dhall-lang/setup-dhall@v4
     - name: publish
       run: |
-        mkdir -p .gnupg
-        echo $GPG_SEC | base64 --decode > .gnupg/secring.asc
-        echo $GPG_PUB | base64 --decode > .gnupg/pubring.asc
-        sbt +releaseEarly
+        LAST_RELEASE=$(hub release -L 1)
+        LOCAL_VERSION=$(dhall text <<< 'let a = ./build.dhall in "v${a.version}.${env:GITHUB_RUN_NUMBER as Text}"')
+        echo "main version is $LAST_RELEASE and current version is $LOCAL_VERSION"
+        if [ $LAST_RELEASE != $LOCAL_VERSION ];then
+          mkdir -p .gnupg
+          echo $GPG_SEC | base64 --decode > .gnupg/secring.asc
+          echo $GPG_PUB | base64 --decode > .gnupg/pubring.asc
+          nix-shell --run 'sbt +releaseEarly'
+          hub release create -m "${LOCAL_VERSION}" "${LOCAL_VERSION}"
+        fi
       env:
         GPG_SEC: ${{ secrets.GPG_SEC }}
         GPG_PUB: ${{ secrets.GPG_PUB }}
