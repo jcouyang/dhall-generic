@@ -1,6 +1,9 @@
+import scala.util.Properties.envOrElse
+
 val scala212 = "2.12.13"
 val scala213 = "2.13.3"
 val scala3 = "3.0.0-RC1"
+
 lazy val supportedScalaVersions = List(scala213, scala212, scala3)
 
 inScope(Scope.GlobalScope)(
@@ -27,8 +30,8 @@ inScope(Scope.GlobalScope)(
     pgpPublicRing := file(".") / ".gnupg" / "pubring.asc",
     pgpSecretRing := file(".") / ".gnupg" / "secring.asc",
     releaseEarlyWith := SonatypePublisher,
-    scalaVersion := scala213,
-    version := "0.1.0-SNAPSHOT",
+    scalaVersion := scala3,
+    version := s"${dhall.load.version}.${envOrElse("GITHUB_RUN_NUMBER", "dev")}",
     organization := "us.oyanglul",
     organizationName := "blog.oyanglul.us"
   )
@@ -43,6 +46,6 @@ lazy val root = (project in file("."))
       o %% n % v
     }.map(_.withDottyCompat(scalaVersion.value)),
     libraryDependencies ++= (if (scalaVersion.value == scala3) Seq() else Seq("com.chuusai" %% "shapeless" % "2.4.0-M1")),
-    libraryDependencies += ("org.scalameta" %% "munit" % "0.7.22" % Test).withDottyCompat(scalaVersion.value),
+    libraryDependencies += "org.scalameta" %% "munit" % "0.7.22" % Test,
     testFrameworks += new TestFramework("munit.Framework")
   )

@@ -6,21 +6,17 @@ import org.dhallj.syntax._
 import org.dhallj.codec.syntax._
 import org.dhallj.codec.Decoder._
 
-sealed trait Shape
-case class Rectangle(width: Double, height: Double) extends Shape
-case class Circle(radius: Double) extends Shape
-case class OuterClass(name: String, shape: Shape)
-
+import Shape._
+import Env._
 class GenericSpec extends FunSuite {
 
   test("generic decode product") {
     val Right(expr) = """{width = 1, height = 1.1}""".parseExpr
-    val Right(decoded) = expr.as[Rectangle]
-    assertEquals(decoded, Rectangle(1, 1.1))
+    val Right(decoded: Rectangle) = expr.as[Rectangle]
+    assertEquals(Rectangle(1, 1.1), decoded)
   }
 
   test("generic decode empty product") {
-    case class Empty()
     val Right(expr) = """{=}""".parseExpr
     val Right(decoded) = expr.as[Empty]
     assertEquals(decoded, Empty())
@@ -56,31 +52,20 @@ class GenericSpec extends FunSuite {
   }
 
   test("case object") {
-    sealed trait Env
-    // case object Local extends Env
-    case object Sit extends Env
-    // case object Prod extends Env
-    case class Config(env: Env)
     val Right(expr) = """{env = <Local | Sit | Prod>.Sit}""".parseExpr
     val Right(decoded) = expr.normalize().as[Config]
     assertEquals(decoded, Config(Sit))
   }
 
   test("empty case class") {
-    sealed trait Env
-    case class Local() extends Env
-    case class Sit() extends Env
-    case class Prod() extends Env
-    case class Config(env: Env)
-    val Right(expr) = """{env = <Local | Sit | Prod>.Sit}""".parseExpr
-    val Right(decoded) = expr.normalize().as[Config]
-    assertEquals(decoded, Config(Sit()))
+    val Right(expr) = """<Local | Sit | Prod>.Sit""".parseExpr
+    val Right(decoded) = expr.normalize().as[Env2]
+    assertEquals(decoded, Env2.Sit())
   }
 
   test("list of Shape") {
     val Right(expr) =
       """let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}> in {shapes = [Shape.Circle {radius = 1.1}]}""".parseExpr
-    case class Shapes(shapes: List[Shape])
     val Right(decoded) = expr.normalize().as[Shapes]
 
     assertEquals(decoded, Shapes(List(Circle(1.1))))

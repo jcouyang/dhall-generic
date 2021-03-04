@@ -9,10 +9,10 @@ case class Module(
     version: String
 )
 
-case class Build(modules: List[Module])
+case class Build(version:String,modules: List[Module])
 
 object dhall {
-  def load = {
+  val load = {
     val Right(expr) = "./build.dhall".parseExpr.flatMap(_.resolve)
     val Right(decoded) = expr.normalize().as[Build]
     decoded
