@@ -35,6 +35,7 @@ jobs:
         SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
       run: |
+        which hub
         LAST_RELEASE=$(hub release -L 1)
         LOCAL_VERSION=$(dhall text <<< 'let a = ./build.dhall in "v${a.version}.${env:GITHUB_RUN_NUMBER as Text}"')
         echo "main version is $LAST_RELEASE and current version is $LOCAL_VERSION"
