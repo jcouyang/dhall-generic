@@ -1,9 +1,10 @@
 name: Release
 on:
-  workflow_run:
-    workflows: ["Build and Test"]
-    branches: [ master ]
-    types: [ completed ]
+  pull_request:
+  # workflow_run:
+  #   workflows: ["Build and Test"]
+  #   branches: [ master ]
+  #   types: [ completed ]
 
 jobs:
   publish:
@@ -37,10 +38,3 @@ jobs:
         LAST_RELEASE=$(hub release -L 1)
         LOCAL_VERSION=$(dhall text <<< 'let a = ./build.dhall in "v${a.version}.${env:GITHUB_RUN_NUMBER as Text}"')
         echo "main version is $LAST_RELEASE and current version is $LOCAL_VERSION"
-        if [ $LAST_RELEASE != $LOCAL_VERSION ];then
-          mkdir -p .gnupg
-          echo $GPG_SEC | base64 --decode > .gnupg/secring.asc
-          echo $GPG_PUB | base64 --decode > .gnupg/pubring.asc
-          sbt +releaseEarly
-          hub release create -m "${LOCAL_VERSION}" "${LOCAL_VERSION}"
-        fi
