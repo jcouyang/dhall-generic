@@ -27,6 +27,12 @@ jobs:
     - name: Setup Dhall
       uses: dhall-lang/setup-dhall@v4
     - name: publish
+      env:
+        GPG_SEC: ${{ secrets.GPG_SEC }}
+        GPG_PUB: ${{ secrets.GPG_PUB }}
+        PGP_PASS: ${{ secrets.PGP_PASS }}
+        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
       run: |
         LAST_RELEASE=$(hub release -L 1)
         LOCAL_VERSION=$(dhall text <<< 'let a = ./build.dhall in "v${a.version}.${env:GITHUB_RUN_NUMBER as Text}"')
@@ -35,12 +41,6 @@ jobs:
           mkdir -p .gnupg
           echo $GPG_SEC | base64 --decode > .gnupg/secring.asc
           echo $GPG_PUB | base64 --decode > .gnupg/pubring.asc
-          nix-shell --run 'sbt +releaseEarly'
+          sbt +releaseEarly
           hub release create -m "${LOCAL_VERSION}" "${LOCAL_VERSION}"
         fi
-      env:
-        GPG_SEC: ${{ secrets.GPG_SEC }}
-        GPG_PUB: ${{ secrets.GPG_PUB }}
-        PGP_PASS: ${{ secrets.PGP_PASS }}
-        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-        SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
