@@ -28,6 +28,7 @@ jobs:
       uses: dhall-lang/setup-dhall@v4
     - name: publish
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GPG_SEC: ${{ secrets.GPG_SEC }}
         GPG_PUB: ${{ secrets.GPG_PUB }}
         PGP_PASS: ${{ secrets.PGP_PASS }}
