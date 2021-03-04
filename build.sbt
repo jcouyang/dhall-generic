@@ -31,7 +31,6 @@ inScope(Scope.GlobalScope)(
     pgpSecretRing := file(".") / ".gnupg" / "secring.asc",
     releaseEarlyWith := SonatypePublisher,
     scalaVersion := scala3,
-    version := s"${dhall.load.version}.${envOrElse("GITHUB_RUN_NUMBER", "dev")}",
     organization := "us.oyanglul",
     organizationName := "blog.oyanglul.us"
   )
@@ -40,6 +39,7 @@ inScope(Scope.GlobalScope)(
 lazy val root = (project in file("."))
   .settings(
     name := "Dhall Generic",
+    version := s"${dhall.load.version}.${envOrElse("GITHUB_RUN_NUMBER", "dev")}",
     crossScalaVersions := supportedScalaVersions,
     //    scalacOptions += "-Xlog-implicits",
     libraryDependencies ++= dhall.load.modules.map { case Module(o, n, v) =>
