@@ -44,14 +44,12 @@ object generic {
     given [A:Encoder,B:Decoder]: Decoder[Function1[A,B]] with {
       def decode(expr: Expr) = decodeFunction1[A,B].decode(expr)
     }
-    inline def summonAll[T <: Tuple]: List[Decoder[_]] =
-    inline erasedValue[T] match
-        case _: EmptyTuple => Nil
-        case _: (t *: ts) => summonInline[Decoder[t]] :: summonAll[ts]
-  
-    given decodeHNil: Decoder[EmptyTuple] with {
-      def decode(expr: Expr): Result[EmptyTuple] = Right(EmptyTuple)
-    }
+
+    inline given summonEmptyTuple[H]: Tuple.Map[EmptyTuple.type, Decoder] =
+      EmptyTuple
+
+    inline given summonTuple[H, T <: Tuple](using hd: Decoder[H], td: Tuple.Map[T, Decoder]): Tuple.Map[H *: T, Decoder] =
+      hd *: td
   
     inline def fieldNames(p: Mirror) =
       constValueTuple[p.MirroredElemLabels].productIterator
@@ -95,8 +93,8 @@ object generic {
         }
   
       }  
-    inline given derived[T](using m: Mirror.Of[T]): Decoder[T] =
-      lazy val allDecoders = summonAll[m.MirroredElemTypes]
+    inline given derived[T](using m: Mirror.Of[T], d: Tuple.Map[m.MirroredElemTypes, Decoder]): Decoder[T] =
+      lazy val allDecoders = d.toList.asInstanceOf[List[Decoder[_]]]
       lazy val names = fieldNames(m).asInstanceOf[Iterator[String]].toSeq
       inline m match
         case s: Mirror.SumOf[T] => 
@@ -109,5 +107,4 @@ object generic {
       def isValidType(typeExpr: Expr): Boolean = true
       def isExactType(typeExpr: Expr): Boolean = true
   }
-
 }

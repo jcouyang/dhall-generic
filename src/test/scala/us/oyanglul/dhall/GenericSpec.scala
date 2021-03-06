@@ -5,7 +5,7 @@ import munit._
 import org.dhallj.syntax._
 import org.dhallj.codec.syntax._
 import org.dhallj.codec.Decoder._
-
+import java.util.UUID
 import Shape._
 import Env._
 class GenericSpec extends FunSuite {
@@ -36,10 +36,10 @@ class GenericSpec extends FunSuite {
     val Right(expr) =
       """|
          |let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}>
-         |in {name = "Outer Class", shape = Shape.Circle {radius = 1.2}}
+         |in {name = "Outer Class", shape = Shape.Circle {radius = 1.2}, uuid = "644BA20E-9C09-4C70-BDEB-8998ED92157B"}
          |""".stripMargin.parseExpr
     val Right(decoded) = expr.normalize.as[OuterClass]
-    assertEquals(decoded, OuterClass("Outer Class", Circle(1.2)))
+    assertEquals(decoded, OuterClass("Outer Class", Circle(1.2), UUID.fromString("644BA20E-9C09-4C70-BDEB-8998ED92157B")))
   }
 
   test("exception") {
