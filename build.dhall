@@ -6,12 +6,15 @@ let Build = { version : Text, modules : List Module }
 
 let dhallOrg = "org.dhallj"
 
-let dhallVersion = "0.4.0"
+let dhallScalaVersion = "0.4.0"
 
 in    { version = "0.3"
       , modules =
-        [ { org = dhallOrg, name = "dhall-scala", version = dhallVersion }
-        , { org = dhallOrg, name = "dhall-scala-codec", version = dhallVersion }
+        [ { org = dhallOrg, name = "dhall-scala", version = dhallScalaVersion }
+        , { org = dhallOrg
+          , name = "dhall-scala-codec"
+          , version = dhallScalaVersion
+          }
         ]
       }
     : Build
