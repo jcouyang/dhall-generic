@@ -1,14 +1,15 @@
 package us.oyanglul.dhall
 
-import org.dhallj.codec.Decoder._
-import generic.{given,
-_
-}
+import generic.Decoder
+import java.util.UUID
+
 enum Shape derives Decoder:
   case Rectangle(width: Double, height: Double)
   case Circle(radius: Double)
 
-case class OuterClass(name: String, shape: Shape) derives Decoder
+given (using d: Decoder[String]): Decoder[UUID] = d.map(UUID.fromString)
+
+case class OuterClass(name: String, shape: Shape, uuid: UUID) derives Decoder
 
 case class Empty() derives Decoder
 

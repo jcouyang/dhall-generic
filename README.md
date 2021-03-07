@@ -5,33 +5,66 @@ Load Dhall config directly into Scala case class
 [![](https://index.scala-lang.org/jcouyang/dhall-generic/latest.svg?v=1)](https://index.scala-lang.org/jcouyang/dhall-generic)
 
 ```
-libraryDependencies += "us.oyanglul" %% "dhall-generic" % "0.2.0"
+libraryDependencies += "us.oyanglul" %% "dhall-generic" % "0.3.+"
 ```
 
-Supposed that you have some Scala case classes
-```scala
-sealed trait Shape
-case class Rectangle(width: Double, height: Double) extends Shape
-case class Circle(radius: Double) extends Shape
-```
-
-and a dhall config
+There is a dhall config
 ```dhall
 let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}>
 in Shape.Circle {radius = 1.2}
 ```
 
-to load a dhall configuration into Scala case classes, simply just
-
+And you can parse them into dhall `Expr`
 ```scala
 import org.dhallj.syntax._
-import org.dhallj.codec.syntax._
-import us.oyanglul.dhall.generic._
 
 val expr = """
 let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}>
 in Shape.Circle {radius = 1.2}
 """.parseExpr
+```
+### Scala 3
+Supposed that you have some Scala case classes
+```scala
+enum Shape:
+  case Rectangle(width: Double, height: Double)
+  case Circle(radius: Double)
+```
+
+to load a dhall expr into Scala case classes, simply just
+1. `derives Decoder`
+```scala
+import us.oyanglul.dhall.generic.Decoder
+
+enum Shape derives Decoder:  // derive will generate decoder inline
+  case Rectangle(width: Double, height: Double)
+  case Circle(radius: Double)
+```
+
+2. `as[Shape]`
+```scala
+import us.oyanglul.dhall.generic.as
+
+expr.normalize.as[Shape]
+// => Right(Circle(1.2)): Either[DecodingFailure, Shape]
+```
+
+### Scala 2
+Supposed that you have some Scala case classes
+```scala
+sealed trait Shape
+object Shape {
+  case class Rectangle(width: Double, height: Double) extends Shape
+  case class Circle(radius: Double) extends Shape
+}
+```
+
+to load a dhall expr into Scala case classes, simply just
+
+```scala
+import org.dhallj.codec.syntax._   // for `.as[A]` syntax
+import org.dhallj.codec.Decoder._  // Decoders for primity types
+import us.oyanglul.dhall.generic._ // generate generic decoders
 
 expr.normalize.as[Shape]
 // => Right(Circle(1.2)): Either[DecodingFailure, Shape]
@@ -69,6 +102,12 @@ libraryDependencies ++= dhall.load.modules.map{case Module(o, n, v) => o %% n % 
 Create new decoder from existing decoder
 
 i.e. UUID
+### Scala 3
+```scala
+given (using d: Decoder[String]): Decoder[UUID] = d.map(UUID.fromString)
+```
+
+### Scala 2
 ```scala
 implicit val decodeUUID: Decoder[UUID] = decodeString.map(UUID.from)
 ```
