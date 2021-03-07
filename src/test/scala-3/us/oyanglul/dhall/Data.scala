@@ -1,6 +1,6 @@
 package us.oyanglul.dhall
 
-import generic._
+import generic.Decoder
 import java.util.UUID
 
 enum Shape derives Decoder:

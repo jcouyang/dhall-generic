@@ -34,14 +34,16 @@ enum Shape:
 to load a dhall expr into Scala case classes, simply just
 1. `derives Decoder`
 ```scala
-enum Shape derives Decoder:
+import us.oyanglul.dhall.generic.Decoder
+
+enum Shape derives Decoder:  // derive will generate decoder inline
   case Rectangle(width: Double, height: Double)
   case Circle(radius: Double)
 ```
 
 2. `as[Shape]`
 ```scala
-import us.oyanglul.dhall.generic._
+import us.oyanglul.dhall.generic.as
 
 expr.normalize.as[Shape]
 // => Right(Circle(1.2)): Either[DecodingFailure, Shape]
@@ -60,7 +62,9 @@ object Shape {
 to load a dhall expr into Scala case classes, simply just
 
 ```scala
-import us.oyanglul.dhall.generic._
+import org.dhallj.codec.syntax._   // for `.as[A]` syntax
+import org.dhallj.codec.Decoder._  // Decoders for primity types
+import us.oyanglul.dhall.generic._ // generate generic decoders
 
 expr.normalize.as[Shape]
 // => Right(Circle(1.2)): Either[DecodingFailure, Shape]
