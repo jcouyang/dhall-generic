@@ -1,11 +1,20 @@
 package us.oyanglul.dhall
+import org.dhallj.codec.Decoder._
+import org.dhallj.codec.Decoder
+import java.util.UUID
 
 sealed trait Shape
 object Shape {
   case class Rectangle(width: Double, height: Double) extends Shape
   case class Circle(radius: Double) extends Shape
 }
-case class OuterClass(name: String, shape: Shape)
+
+case class OuterClass(name: String, shape: Shape, uuid: UUID)
+
+object OuterClass {
+  implicit val uuidDecoder: Decoder[UUID] = decodeString.map(UUID.fromString)
+
+}
 case class Empty()
 
 sealed trait Env

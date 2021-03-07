@@ -9,11 +9,21 @@ import scala.compiletime.{erasedValue, summonInline,constValueTuple}
 import org.dhallj.codec.Decoder._
 
 object generic {
-  trait Decoder[T] {
+  sealed trait Decoder[T] {
     def decode(expr: Expr): Result[T]
   }
 
+  sealed trait Functor[F[_]]:
+    def fmap[A, B](f: A=> B): F[A] => F[B]
+    extension [A](fa: F[A])
+      def map[B](f: A => B) = fmap[A, B](f)(fa)
+
   object Decoder {
+    given Functor[Decoder] with {
+      def fmap[A, B](f: A => B) = (da) => new Decoder[B] {
+        def decode(expr: Expr) = da.decode(expr).map(f)
+      }
+    }
     given Decoder[Double] with {
       def decode(expr: Expr) = decodeDouble.decode(expr)
     }
@@ -107,4 +117,7 @@ object generic {
       def isValidType(typeExpr: Expr): Boolean = true
       def isExactType(typeExpr: Expr): Boolean = true
   }
+
+  extension (expr: Expr)
+    def as[A](using d: Decoder[A]) = d.decode(expr)
 }

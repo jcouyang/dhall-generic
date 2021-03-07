@@ -33,6 +33,7 @@ class GenericSpec extends FunSuite {
   }
 
   test("nested coproduct and product") {
+    import OuterClass._
     val Right(expr) =
       """|
          |let Shape = <Rectangle: {width: Double, height: Double}| Circle: {radius: Double}>
