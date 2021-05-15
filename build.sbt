@@ -2,7 +2,7 @@ import scala.util.Properties.envOrElse
 
 val scala212 = "2.12.13"
 val scala213 = "2.13.3"
-val scala3 = "3.0.0-RC1"
+val scala3 = "3.0.0"
 
 lazy val supportedScalaVersions = List(scala213, scala212, scala3)
 
@@ -46,6 +46,6 @@ lazy val root = (project in file("."))
       o %% n % v
     }.map(_.withDottyCompat(scalaVersion.value)),
     libraryDependencies ++= (if (scalaVersion.value == scala3) Seq() else Seq("com.chuusai" %% "shapeless" % "2.4.0-M1")),
-    libraryDependencies += "org.scalameta" %% "munit" % "0.7.23" % Test,
+    libraryDependencies += "org.scalameta" %% "munit" % "0.7.26" % Test,
     testFrameworks += new TestFramework("munit.Framework")
   )

@@ -1,5 +1,3 @@
-let scalaVersion = "2.13"
-
 let Module = { org : Text, name : Text, version : Text }
 
 let Build = { version : Text, modules : List Module }
