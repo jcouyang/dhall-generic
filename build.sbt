@@ -42,10 +42,14 @@ lazy val root = (project in file("."))
     version := s"${dhall.load.version}.${envOrElse("GITHUB_RUN_NUMBER", "dev")}",
     crossScalaVersions := supportedScalaVersions,
     //    scalacOptions += "-Xlog-implicits",
-    libraryDependencies ++= dhall.load.modules.map { case Module(o, n, v) =>
-      o %% n % v
-    }.map(_.withDottyCompat(scalaVersion.value)),
-    libraryDependencies ++= (if (scalaVersion.value == scala3) Seq() else Seq("com.chuusai" %% "shapeless" % "2.4.0-M1")),
+    libraryDependencies ++= dhall.load.modules
+      .map { case Module(o, n, v) =>
+        o %% n % v
+      }
+      .map(_.withDottyCompat(scalaVersion.value)),
+    libraryDependencies ++= (if (scalaVersion.value == scala3) Seq()
+                             else
+                               Seq("com.chuusai" %% "shapeless" % "2.4.0-M1")),
     libraryDependencies += "org.scalameta" %% "munit" % "0.7.28" % Test,
     testFrameworks += new TestFramework("munit.Framework")
   )

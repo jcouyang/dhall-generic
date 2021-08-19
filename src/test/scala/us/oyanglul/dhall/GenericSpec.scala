@@ -40,7 +40,14 @@ class GenericSpec extends FunSuite {
          |in {name = "Outer Class", shape = Shape.Circle {radius = 1.2}, uuid = "644BA20E-9C09-4C70-BDEB-8998ED92157B"}
          |""".stripMargin.parseExpr
     val Right(decoded) = expr.normalize.as[OuterClass]
-    assertEquals(decoded, OuterClass("Outer Class", Circle(1.2), UUID.fromString("644BA20E-9C09-4C70-BDEB-8998ED92157B")))
+    assertEquals(
+      decoded,
+      OuterClass(
+        "Outer Class",
+        Circle(1.2),
+        UUID.fromString("644BA20E-9C09-4C70-BDEB-8998ED92157B")
+      )
+    )
   }
 
   test("exception") {
