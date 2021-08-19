@@ -9,7 +9,7 @@ case class Module(
     version: String
 )
 
-case class Build(version:String,modules: List[Module])
+case class Build(version: String, modules: List[Module])
 
 object dhall {
   val load = {
