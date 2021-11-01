@@ -1,7 +1,7 @@
 import scala.util.Properties.envOrElse
 
 val scala212 = "2.12.15"
-val scala213 = "2.13.6"
+val scala213 = "2.13.7"
 val scala3 = "3.1.0"
 
 lazy val supportedScalaVersions = List(scala213, scala212, scala3)
