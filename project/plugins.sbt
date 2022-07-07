@@ -1,4 +1,4 @@
-addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.3.1")
+addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.3.3")
 addSbtPlugin("ch.epfl.scala" % "sbt-release-early" % "2.1.1")
 addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.5.5")
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.4")
