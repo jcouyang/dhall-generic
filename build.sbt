@@ -50,6 +50,6 @@ lazy val root = (project in file("."))
     libraryDependencies ++= (if (scalaVersion.value == scala3) Seq()
                              else
                                Seq("com.chuusai" %% "shapeless" % "2.4.0-M1")),
-    libraryDependencies += "org.scalameta" %% "munit" % "1.0.1" % Test,
+    libraryDependencies += "org.scalameta" %% "munit" % "1.0.2" % Test,
     testFrameworks += new TestFramework("munit.Framework")
   )
